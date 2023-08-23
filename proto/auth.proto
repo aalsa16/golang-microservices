@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "github.com/aalsa16/golang-microservices/proto";
+
+message SignUpRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message User {
+    int64 id = 1;
+    string email = 2;
+    string uuid = 3;
+    string token = 4;
+    int64 createdAt = 5;
+}
+
+message SignInRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message SignInResponse {
+    User user = 1;
+    string token = 2;
+}
+
+service AuthenticationService {
+    rpc SignUp(SignUpRequest) returns (User);
+    rpc SignIn(SignInRequest) returns (SignInResponse);
+}
