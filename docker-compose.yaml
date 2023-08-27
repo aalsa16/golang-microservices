@@ -1,0 +1,67 @@
+version: "3.8"
+services:
+    web:
+        build:
+            dockerfile: Dockerfile
+            context: web
+        container_name: web_c
+        image: web-app:latest
+        ports:
+            - '3000:3000'
+        stdin_open: true
+        tty: true
+    quotes:
+        build:
+            dockerfile: Dockerfile.quotes
+            context: .
+        container_name: quotes_c
+        image: quotes-service:latest
+        env_file:
+            - .env
+        ports:
+            - '9002:9002'
+    api:
+        build:
+            dockerfile: Dockerfile.api
+            context: .
+        container_name: api_c
+        image: api-service:latest
+        env_file:
+            - .env
+        ports:
+            - '8080:8080'
+    db:
+        image: mysql:latest
+        container_name: db
+        command: --default-authentication-plugin=mysql_native_password
+        restart: unless-stopped
+        environment:
+            MYSQL_USER: user
+            MYSQL_ROOT_PASSWORD: mypassword
+            MYSQL_PASSWORD: mypassword
+            MYSQL_DATABASE: quotedb
+        volumes:
+            - my-db:/var/lib/mysql
+        ports:
+            - '3306:3306'
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            start_period: 5s
+            interval: 5s
+            timeout: 5s
+            retries: 55
+    authentication:
+        build:
+            dockerfile: Dockerfile.authentication
+            context: .
+        container_name: authentication_c
+        image: authentication-service:latest
+        env_file:
+            - .env
+        ports:
+            - '9001:9001'
+        depends_on:
+            db:
+                condition: service_healthy
+volumes:
+    my-db:

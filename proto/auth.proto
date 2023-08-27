@@ -11,8 +11,6 @@ message User {
     int64 id = 1;
     string email = 2;
     string uuid = 3;
-    string token = 4;
-    int64 createdAt = 5;
 }
 
 message SignInRequest {
@@ -22,10 +20,20 @@ message SignInRequest {
 
 message SignInResponse {
     User user = 1;
-    string token = 2;
+    string access_token = 2;
+    string refresh_token = 3;
+}
+
+message RefreshTokenRequest {
+    string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+    string access_token = 1;
 }
 
 service AuthenticationService {
     rpc SignUp(SignUpRequest) returns (User);
     rpc SignIn(SignInRequest) returns (SignInResponse);
+    rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
 }

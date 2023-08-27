@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/aalsa16/golang-microservices/authentication/types"
@@ -11,7 +10,9 @@ import (
 func (d *SqlServer) SaveUser(req *types.SignUpRequest) (signupUser *types.SaveResponse, err error) {
 	id := uuid.New().String()
 
-	result, err := d.DB.Exec(fmt.Sprintf("INSERT INTO `users` (`email`, `password`, `uuid`, `token`) VALUES ('%s', '%s', '%s', '')", req.Email, req.Password, id))
+	query := "INSERT INTO `users` (`email`, `password`, `uuid`) VALUES (?, ?, ?)"
+
+	result, err := d.DB.Exec(query, req.Email, req.Password, id)
 
 	if err != nil {
 		return nil, err
@@ -20,10 +21,8 @@ func (d *SqlServer) SaveUser(req *types.SignUpRequest) (signupUser *types.SaveRe
 	lastInsertID, _ := result.LastInsertId()
 
 	var row types.User
-	query := "SELECT id, email, password, uuid, token, created_at FROM users WHERE id = ?"
-	err = d.DB.QueryRow(query, lastInsertID).Scan(&row.ID, &row.Email, &row.Password, &row.Uuid, &row.Token, &row.CreatedAt)
-
-	fmt.Println(err)
+	query = "SELECT id, email, password, uuid, created_at FROM users WHERE id = ?"
+	err = d.DB.QueryRow(query, lastInsertID).Scan(&row.ID, &row.Email, &row.Password, &row.Uuid, &row.CreatedAt)
 
 	if err != nil {
 		return nil, err
@@ -41,11 +40,34 @@ func (d *SqlServer) SaveUser(req *types.SignUpRequest) (signupUser *types.SaveRe
 		ID:        lastInsertID,
 		Email:     req.Email,
 		Uuid:      id,
-		Token:     "",
 		CreatedAt: unixTimestamp,
 	}, nil
 }
 
 func (d *SqlServer) GetUser(email string) (user types.User, err error) {
-	return types.User{}, nil
+	var row types.User
+	query := "SELECT id, email, password, uuid, created_at FROM users WHERE email = ?"
+	err = d.DB.QueryRow(query, email).Scan(&row.ID, &row.Email, &row.Password, &row.Uuid, &row.CreatedAt)
+
+	if err != nil {
+		return user, err
+	}
+
+	return row, nil
+}
+
+func (d *SqlServer) SaveRefreshToken(token string, uuid string) error {
+	query := "UPDATE users SET refresh_token = ? WHERE uuid = ?"
+
+	_, err := d.DB.Exec(query, token, uuid)
+
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

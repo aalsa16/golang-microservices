@@ -31,13 +31,23 @@ func setupSql() *sql.DB {
 		log.Fatalf("Failed to connect to db %v", err)
 	}
 
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY AUTO_INCREMENT, email VARCHAR(255) NOT NULL UNIQUE, password VARCHAR(255) NOT NULL, uuid VARCHAR(255) NOT NULL UNIQUE, refresh_token TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS quotes (id INT AUTO_INCREMENT, quote VARCHAR(255), author VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, owner_uuid VARCHAR(255) NOT NULL, PRIMARY KEY (id), FOREIGN KEY (owner_uuid) REFERENCES users(uuid))")
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
 	return db
 }
 
 func main() {
 	godotenv.Load("../.env")
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("authentication:%d", port))
 
 	if err != nil {
 		log.Fatalf("Failed to set up server %v", err)

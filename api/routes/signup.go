@@ -34,7 +34,7 @@ func (h *Handlers) SignUp() gin.HandlerFunc {
 			Password: body.Password,
 		}
 
-		resp, err := h.svc.SignUp(context.Background(), user)
+		resp, err := h.authSvc.SignUp(context.Background(), user)
 
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "error while signing up"})

@@ -7,14 +7,20 @@ import (
 
 type HandlersInterface interface {
 	SignUp() gin.HandlerFunc
+	SignIn() gin.HandlerFunc
+	GetQuote() gin.HandlerFunc
+	GetAllQuotes() gin.HandlerFunc
+	RefreshToken() gin.HandlerFunc
 }
 
 type Handlers struct {
-	svc proto.AuthenticationServiceClient
+	authSvc  proto.AuthenticationServiceClient
+	quoteSvc proto.QuoteServiceClient
 }
 
-func NewHandlers(svc proto.AuthenticationServiceClient) HandlersInterface {
+func NewHandlers(authSvc proto.AuthenticationServiceClient, quoteSvc proto.QuoteServiceClient) HandlersInterface {
 	return &Handlers{
-		svc: svc,
+		authSvc:  authSvc,
+		quoteSvc: quoteSvc,
 	}
 }
